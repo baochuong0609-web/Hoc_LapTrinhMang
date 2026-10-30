@@ -8,9 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.Json.Serialization;
-using System.Drawing.Text;
-using System.Linq.Expressions;
+using System.IO; 
+
 namespace WinFormsApp1
 {
     public partial class Cau4 : Form
@@ -23,9 +22,13 @@ namespace WinFormsApp1
             public string Dienthoai;
             public float Diemtoan;
             public float Diemvan;
-            public float DTB;  
+            public float DTB;
         }
+
+       
         List<HocVien> danhsachHV = new List<HocVien>();
+        bool vuaMoiGhiFile = false;
+
         public Cau4()
         {
             InitializeComponent();
@@ -41,50 +44,50 @@ namespace WinFormsApp1
 
         }
 
-        private void btnRead_Click(object sender, EventArgs e)
+        
+        private void btnThem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Title = "Chọn file text chứa danh sách để đọc";
-
-            if (ofd.ShowDialog() == DialogResult.OK)
+            try
             {
-                FileStream fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate);
-                StreamReader sr = new StreamReader(fs);
-
-                if (fs.Length == 0)
+                if (vuaMoiGhiFile == true)
                 {
-                    MessageBox.Show("File không có nội dung");
-                    fs.Close();
-                    return;
+                    richTextBox1.Clear();    
+                    vuaMoiGhiFile = false;   
                 }
 
-                List<HocVien> dshv = new List<HocVien>();
-                string mssv;
+                HocVien hv = new HocVien();
+                hv.MSSV = textBox1.Text;
+                hv.HoTen = textBox2.Text;
+                hv.Dienthoai = textBox3.Text;
+                hv.Diemtoan = float.Parse(textBox4.Text);
+                hv.Diemvan = float.Parse(textBox5.Text);
 
-                while ((mssv = sr.ReadLine()) != null)
-                {
-                    if (mssv.Trim() == "") continue;
 
-                    HocVien hv = new HocVien();
-                    hv.MSSV = mssv;
-                    hv.HoTen = sr.ReadLine();
-                    hv.Dienthoai = sr.ReadLine();
-                    hv.Diemtoan = float.Parse(sr.ReadLine().Trim());
-                    hv.Diemvan = float.Parse(sr.ReadLine().Trim());
+                danhsachHV.Add(hv);
 
-                    dshv.Add(hv);
-                }
-                sr.Close();
-                fs.Close();
 
                 FileStream fsIn = new FileStream("resinput.txt", FileMode.Create);
                 BinaryFormatter bf = new BinaryFormatter();
-                
-                bf.Serialize(fsIn, dshv);
+
+                bf.Serialize(fsIn, danhsachHV);
                 fsIn.Close();
-                MessageBox.Show("Đã nén mảng học viên vào resinput.txt");
+
+
+                richTextBox1.Text += "Đã thêm thành công MSSV: " + hv.MSSV + "\r\n";
+
+                textBox1.Clear();
+                textBox2.Clear();
+                textBox3.Clear();
+                textBox4.Clear();
+                textBox5.Clear();
+                textBox1.Focus();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin và nhập số hợp lệ cho điểm!");
             }
         }
+
 
         private void btnWrite_Click(object sender, EventArgs e)
         {
@@ -96,39 +99,38 @@ namespace WinFormsApp1
                 List<HocVien> dsHocVien = (List<HocVien>)bf.Deserialize(fsIn);
                 fsIn.Close();
 
-
                 string hienthi = "";
                 foreach (HocVien hv in dsHocVien)
                 {
                     hv.DTB = (hv.Diemtoan + hv.Diemvan) / 2.0f;
 
-                    hienthi += hv.MSSV +"\r\n"
+                    hienthi += hv.MSSV + "\r\n"
                     + hv.HoTen + "\r\n"
                     + hv.Dienthoai + "\r\n"
                     + hv.Diemtoan + "\r\n"
                     + hv.Diemvan + "\r\n"
                     + hv.DTB + "\r\n\r\n";
                 }
-                    richTextBox1.Text = hienthi;
+                richTextBox1.Text = hienthi;
+                vuaMoiGhiFile = true;
 
-                    SaveFileDialog sfd = new SaveFileDialog();
-                    sfd.Title = "Chọn vị trí lưu file Output";
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Title = "Chọn vị trí lưu file Output";
 
-                    if(sfd.ShowDialog() == DialogResult.OK)
-                    {
-                        FileStream fsOut = new FileStream(sfd.FileName, FileMode.Create);
-                        bf.Serialize(fsOut, dsHocVien);
-                        fsOut.Close();
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    FileStream fsOut = new FileStream(sfd.FileName, FileMode.Create);
+                    bf.Serialize(fsOut, dsHocVien);
+                    fsOut.Close();
 
-                        MessageBox.Show("Đã xuất file output!");
-                    }
+                    MessageBox.Show("Đã xuất file output!");
                 }
-                catch (Exception)
+            }
+            catch (Exception)
             {
-                MessageBox.Show("Chưa có file input để ghi!");
+                MessageBox.Show("Chưa có dữ liệu để ghi, hãy THÊM sinh viên trước!");
             }
-            }
-            
         }
-    }
 
+    }
+}

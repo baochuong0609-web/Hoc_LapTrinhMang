@@ -36,5 +36,10 @@ namespace WinFormsApp1
             Cau5 frm5 = new Cau5();
             frm5.Show();
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

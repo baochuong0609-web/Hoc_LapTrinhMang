@@ -26,7 +26,7 @@ namespace WinFormsApp1
         private void btnRead_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.ShowDialog();
+            if (ofd.ShowDialog() != DialogResult.OK) return;
             FileStream fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate);
             StreamReader sr = new StreamReader(fs);
             string content = sr.ReadToEnd();

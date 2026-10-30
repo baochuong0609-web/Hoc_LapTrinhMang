@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Reflection.Metadata;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -21,7 +22,7 @@ namespace WinFormsApp1
         private void btnRead_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.ShowDialog();
+            if (ofd.ShowDialog() != DialogResult.OK) return;
             FileStream fs = new FileStream(ofd.FileName, FileMode.OpenOrCreate);
             StreamReader sr = new StreamReader(fs);
             string content = sr.ReadToEnd();
@@ -32,9 +33,9 @@ namespace WinFormsApp1
         private void btnWrite_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.ShowDialog();
+            if (sfd.ShowDialog() != DialogResult.OK) return;
 
-            FileStream fs = new FileStream(sfd.FileName, FileMode.CreateNew);
+            FileStream fs = new FileStream(sfd.FileName, FileMode.Create);
             StreamWriter sw = new StreamWriter(fs);
 
             foreach (string line in richTextBox1.Lines)
